@@ -56,7 +56,8 @@ const app = new Elysia()
       }
     })
   )
-  .listen(4000);
+  .listen({ port: 4000, hostname: '0.0.0.0' });
 
-console.log(`🌱 SheBloom API running at http://localhost:${app.server.port}`);
+console.log(`🌱 SheBloom API running at http://0.0.0.0:${app.server.port}`);
 console.log(`📖 Swagger docs at http://localhost:${app.server.port}/swagger`);
+console.log(`📡 IoT devices can connect at ws://10.135.177.124:${app.server.port}/api/iot/stream`);
