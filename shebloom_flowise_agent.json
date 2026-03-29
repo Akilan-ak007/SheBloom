@@ -1,0 +1,57 @@
+{
+    "name": "SheBloom Empathetic Explainer Agent",
+    "description": "An agent that translates clinical doctor tasks into empathetic, culturally contextualized dialogue for maternal caretakers.",
+    "flowData": {
+        "nodes": [
+            {
+                "id": "chatOpenAI_0",
+                "data": {
+                    "id": "chatOpenAI_0",
+                    "type": "ChatOpenAI",
+                    "inputs": {
+                        "modelName": "llama3",
+                        "temperature": "0.4",
+                        "maxTokens": "150",
+                        "openaiApiBasePath": "http://host.docker.internal:11434/v1"
+                    }
+                }
+            },
+            {
+                "id": "promptTemplate_0",
+                "data": {
+                    "id": "promptTemplate_0",
+                    "type": "PromptTemplate",
+                    "inputs": {
+                        "template": "You are the SheBloom Empathetic Care Agent.\n\nYour task is to explain to a pregnant woman's family caretaker why the following clinical task is critical right now.\n\nClinical Task: \"{question}\"\n\nRules:\n1. Keep it under 3 sentences.\n2. Tone must be extremely warm, empathetic, and culturally appropriate (Indian context).\n3. Do not sound like a robot or a doctor giving orders. Use conversational language.\n4. Explain how this specific action helps the baby's development or the mother's comfort.\n5. Reassure the caretaker that they are doing a great job.\n\nDraft the explanation:",
+                        "promptValues": {}
+                    }
+                }
+            },
+            {
+                "id": "llmChain_0",
+                "data": {
+                    "id": "llmChain_0",
+                    "type": "LLMChain",
+                    "inputs": {
+                        "model": "{{chatOpenAI_0.data.instance}}",
+                        "prompt": "{{promptTemplate_0.data.instance}}"
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "source": "chatOpenAI_0",
+                "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                "target": "llmChain_0",
+                "targetHandle": "llmChain_0-input-model-BaseLanguageModel"
+            },
+            {
+                "source": "promptTemplate_0",
+                "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BasePromptTemplate|Runnable",
+                "target": "llmChain_0",
+                "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate"
+            }
+        ]
+    }
+}
