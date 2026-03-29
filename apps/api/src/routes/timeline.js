@@ -4,13 +4,13 @@ import { generateCareTimeline } from '../services/timeline-engine.js';
 
 export const timelineRoutes = new Elysia({ prefix: '/api/timeline' })
   // Get today's care timeline
-  .get('/today', ({ query }) => {
+  .get('/today', async ({ query }) => {
     const schedule = query.schedule || 'flexible';
     const trimester = parseInt(query.trimester) || 1;
     const conditions = query.conditions ? query.conditions.split(',') : [];
     const herName = query.herName || 'her';
 
-    const timeline = generateCareTimeline(schedule, trimester, conditions, herName);
+    const timeline = await generateCareTimeline(schedule, trimester, conditions, herName);
     return {
       date: new Date().toISOString().split('T')[0],
       schedule,

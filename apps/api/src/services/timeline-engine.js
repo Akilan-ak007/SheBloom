@@ -1,7 +1,7 @@
 // SheBloom — Timeline Engine Service
 // Generates personalized daily care schedules based on companion schedule + trimester + conditions
 
-export function generateCareTimeline(schedule, trimester, conditions, herName) {
+export async function generateCareTimeline(schedule, trimester, conditions, herName) {
   const tasks = [];
 
   // ---- Schedule-based base tasks ----
@@ -100,6 +100,40 @@ export function generateCareTimeline(schedule, trimester, conditions, herName) {
       duration: '30min', gap: 'emergency', verified: 'doctor',
       citation: 'ACOG: Report <10 kicks in 2 hours to doctor immediately'
     });
+  }
+
+  // ---- AI Contextual Overlay (Tamil Nadu Algorithm) ----
+  try {
+    const apiKey = process.env.GROQ_API_KEY || process.env.LLM_API_KEY;
+    if (apiKey) {
+      const prompt = `You are a SheBloom scheduling algorithm for Tamil Nadu. Generate exactly ONE personalized daily care task (time and task description) for a pregnant woman named ${herName}. Conditions: ${conditions.join(', ')}. Trimester: ${trimester}. The task must involve an indigenous Tamil Nadu dietary practice (e.g., Murungai Keerai for iron, Poondu Kuzhambu for lactation, etc). Return ONLY valid JSON: {"time": "11:00", "task": "Prepare Poondu Kuzhambu for lunch", "icon": "utensils"}`;
+      
+      const response = await fetch(process.env.LLM_API_URL || 'https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: process.env.LLM_MODEL || 'llama3-8b-8192',
+          messages: [{ role: 'system', content: prompt }],
+          temperature: 0.7,
+          response_format: { type: "json_object" }
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const aiTask = JSON.parse(data.choices[0].message.content);
+        tasks.push({
+          time: aiTask.time,
+          task: `🌱 [AI Tailored] ${aiTask.task}`,
+          icon: aiTask.icon || 'leaf',
+          duration: '15min',
+          gap: 'nutrition',
+          verified: 'ai-siddha',
+          condition: 'Localized Tamil Care'
+        });
+      }
+    }
+  } catch (err) {
+    console.error("AI Timeline Gen Failed:", err);
   }
 
   // Sort by time
