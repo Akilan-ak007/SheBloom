@@ -41,12 +41,35 @@ export async function checkMissedMedications(wsInstance) {
        if (circle) {
          // Push the alert heavily to the Caretaker room
          // The Capacitor App will physically wake up and speak Tamil natively via window.speechSynthesis
+         let aiTamilMessage = 'வணக்கம், மருந்து நேரம் முடிந்துவிட்டது. தயவுசெய்து உறுதிப்படுத்தவும்.';
+         try {
+             const apiKey = process.env.GROQ_API_KEY || process.env.LLM_API_KEY;
+             if (apiKey) {
+                const prompt = `You are the SheBloom Agent for Tamil Nadu. A caretaker missed a task: "${task.task}". Generate a very empathetic, highly localized Tamil audio alert script (1 sentence only). It will be spoken aloud to the husband. Return ONLY the Tamil text. No quotes.`;
+                const response = await fetch(process.env.LLM_API_URL || 'https://api.groq.com/openai/v1/chat/completions', {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    model: process.env.LLM_MODEL || 'llama3-8b-8192',
+                    messages: [{ role: 'system', content: prompt }],
+                    temperature: 0.7
+                  })
+                });
+                if (response.ok) {
+                   const data = await response.json();
+                   aiTamilMessage = data.choices[0].message.content.trim();
+                }
+             }
+         } catch (e) {
+             console.error("AI Alert Error:", e);
+         }
+         
          wsInstance.publish('caretaker_room', JSON.stringify({
             event: 'trigger_audio_alert',
             taskId: task.id,
             caretakerId: circle.caretakerId,
             taskName: task.task,
-            tamilMessage: 'வணக்கம், மருந்து நேரம் முடிந்துவிட்டது. தயவுசெய்து உறுதிப்படுத்தவும்.' // "Hello, medication time is over. Please confirm."
+            tamilMessage: aiTamilMessage
          }));
        }
     }
