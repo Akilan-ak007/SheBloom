@@ -10,22 +10,21 @@ export default function ExplainDialog({ isOpen, onClose, task, context }) {
       setLoading(true);
       setResponse('');
       
-      // Mocking the Ollama response stream/delay
-      const timer = setTimeout(() => {
-        let msg = '';
-        if (context === 'nutrition') {
-          msg = `Priya has shown signs of mild anemia recently. This ${task.name || 'meal'} is packed with iron and folic acid. Her energy is going into building the baby's blood supply today. By preparing this for her, you're directly keeping her strong and preventing fatigue. You're doing a great job!`;
-        } else if (context === 'action') {
-          msg = `Physical activity like ${task.name || 'this'} helps regulate blood sugar and reduces third-trimester swelling. Walking together not only meets her physical health needs but provides essential emotional grounding.`;
-        } else {
-          msg = `This task is specifically scheduled now to align with her circadian rhythm and medication absorption rules. Ensuring she follows this helps maintain a stable, stress-free environment for the baby.`;
+      const fetchExplanation = async () => {
+        try {
+          const taskName = task?.name || task?.task || 'this care task';
+          const res = await fetch(`http://localhost:4000/api/timeline/explain?task=${encodeURIComponent(taskName)}&context=${encodeURIComponent(context || 'general')}`);
+          const data = await res.json();
+          setResponse(data.explanation || 'Explanation not available.');
+        } catch (error) {
+          console.error('AI Explain Error:', error);
+          setResponse('Failed to connect to the SheBloom AI engine. Please ensure your backend is running.');
+        } finally {
+          setLoading(false);
         }
-        
-        setResponse(msg);
-        setLoading(false);
-      }, 1500);
+      };
 
-      return () => clearTimeout(timer);
+      fetchExplanation();
     }
   }, [isOpen, task, context]);
 
