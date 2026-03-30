@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { 
-  Inbox, FileText, Pill, UtensilsCheck, Send,
+  Inbox, FileText, Pill, UtensilsCrossed, Send,
   XCircle, CheckCircle2, Clock
 } from 'lucide-react';
 import styles from './requests.module.css';
@@ -25,7 +25,7 @@ const MOCK_REQUESTS = [
     patientId: 'PT-10495',
     type: 'diet',
     label: 'Diet Adjustment',
-    icon: UtensilsCheck,
+    icon: UtensilsCrossed,
     time: '5 hours ago',
     message: 'Meera is experiencing severe morning sickness with the current iron supplements. Can we request a diet adjustment or alternative medicine?',
     draftResponse: 'Hello,\n\nIt is common to experience nausea with oral iron. I have updated the Care Plan: \n1. Switch to taking the iron supplement immediately after dinner instead of morning.\n2. I have added "Ginger Tea with Lemon" to the morning timeline to suppress nausea.\n\nPlease monitor for 3 days and update me.'
